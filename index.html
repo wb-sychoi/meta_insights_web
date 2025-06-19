@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Meta 광고 인사이트 조회기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label,
+        input,
+        button {
+            display: block;
+            margin: 10px 0;
+        }
+
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            white-space: pre-wrap;
+            width: 500px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Meta 광고 인사이트 조회기</h1>
+
+    <label for="tokenInput">Access Token:<br />
+        <input type="password" id="tokenInput" size="30" />
+    </label>
+
+    <label for="accountInput">광고 계정 ID (예: act_123456789):<br />
+        <input type="text" id="accountInput" size="30" />
+    </label>
+
+    <label for="dateInput">조회 날짜 (YYYY-MM-DD):<br />
+        <input type="date" id="dateInput" />
+    </label>
+
+    <button id="btnFetch">조회하기</button>
+
+    <h2>조회 결과</h2>
+    <pre id="resultArea"></pre>
+
+    <script>
+        const tokenInput = document.getElementById('tokenInput');
+        const accountInput = document.getElementById('accountInput');
+        const dateInput = document.getElementById('dateInput');
+        const btnFetch = document.getElementById('btnFetch');
+        const resultArea = document.getElementById('resultArea');
+
+        // 기존 토큰이 있다면 불러오기
+        if (localStorage.getItem('ACCESS_TOKEN')) {
+            tokenInput.value = localStorage.getItem('ACCESS_TOKEN');
+        }
+
+        btnFetch.onclick = async () => {
+            const token = tokenInput.value.trim();
+            const account = accountInput.value.trim();
+            const date = dateInput.value;
+
+            if (!token || !account || !date) {
+                alert('모든 항목을 입력하세요.');
+                return;
+            }
+
+            localStorage.setItem('ACCESS_TOKEN', token);
+
+            const fields = [
+                "campaign_name",
+                "impressions",
+                "inline_link_clicks",
+                "inline_link_click_ctr",
+                "cost_per_inline_link_click",
+                "spend",
+                "catalog_segment_actions",
+                "catalog_segment_value",
+                "actions",
+                "action_values",
+                "date_start",
+                "date_stop"
+            ].join(',');
+
+            const url = `https://graph.facebook.com/v23.0/${account}/insights?` +
+                `fields=${encodeURIComponent(fields)}` +
+                `&time_range={"since":"${date}","until":"${date}"}` +
+                `&level=campaign` +
+                `&filtering=[{"field":"action_type","operator":"IN","value":["purchase", "offsite_conversion.fb_pixel_purchase"]}]` +
+                `&access_token=${encodeURIComponent(token)}`;
+
+            resultArea.textContent = '조회 중...';
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    const errText = await response.text();
+                    resultArea.textContent = '에러: ' + errText;
+                    return;
+                }
+
+                const data = await response.json();
+                resultArea.textContent = ""; // 초기화
+
+                data.data.forEach(item => {
+                    const getActionValue = (list, type) => {
+                        if (!Array.isArray(list)) return 0;
+                        const found = list.find(a => a.action_type === type);
+                        return found ? parseFloat(found.value) : 0;
+                    };
+
+                    const impressions = item.impressions ? Number(item.impressions).toLocaleString() : "0";
+                    const clicks = item.inline_link_clicks ? Number(item.inline_link_clicks).toLocaleString() : "0";
+                    const spend = item.spend ? Number(item.spend).toLocaleString() : "0";
+                    const ctr = item.inline_link_click_ctr ? `${parseFloat(item.inline_link_click_ctr).toFixed(2)}%` : '0.00%';
+                    const cpc = item.cost_per_inline_link_click ? Math.round(parseFloat(item.cost_per_inline_link_click)) : 0;
+
+                    const purchases =
+                        getActionValue(item.catalog_segment_actions, "purchase") ||
+                        getActionValue(item.actions, "offsite_conversion.fb_pixel_purchase");
+
+                    const purchaseValue =
+                        getActionValue(item.catalog_segment_value, "purchase") ||
+                        getActionValue(item.action_values, "offsite_conversion.fb_pixel_purchase");
+
+                    const result = `
+일자: ${item.date_start}
+캠페인명: ${item.campaign_name}
+노출: ${impressions}
+링크 클릭: ${clicks}
+비용: ${spend}
+CTR: ${ctr}
+CPC: ${cpc}
+구매수: ${purchases}
+구매가치: ${purchaseValue.toLocaleString()}
+--------------------------------------------------------`;
+
+                    resultArea.textContent += result + '\n';
+                });
+
+            } catch (e) {
+                resultArea.textContent = '오류 발생: ' + e.message;
+            }
+
+            // 토큰 바로 삭제하고 싶으면 아래 코드 주석 해제
+            localStorage.removeItem('ACCESS_TOKEN');
+        };
+    </script>
+</body>
+
+</html>
