@@ -49,6 +49,20 @@
             font-size: 14px;
         }
 
+        #tokenInput::placeholder {
+            font-size: 0.75rem;
+            /* 원하는 크기로 조정 */
+            color: #999;
+            /* 색상도 함께 변경 가능 */
+        }
+
+        #customAccountInput::placeholder {
+            font-size: 0.75rem;
+            /* 원하는 크기로 조정 */
+            color: #999;
+            /* 색상도 함께 변경 가능 */
+        }
+
         button {
             width: 100%;
             padding: 10px;
@@ -78,6 +92,13 @@
             white-space: pre-wrap;
             border-radius: 5px;
         }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+        }
     </style>
 </head>
 
@@ -88,7 +109,7 @@
 
         <label for="tokenInput" class="col-form-label"><small>Access Token</small></label>
         <input type="password" id="tokenInput" size="30" class="form-control form-control-sm"
-            placeholder="Access Token을 입력해주세요" />
+            placeholder="Meta Developer 앱에서 발급받은 Token을 입력해주세요." />
 
         <!-- 광고 계정 ID 직접 입력 -->
         <!-- <label for="accountInput">광고 계정 ID (예: act_123456789):<br />
@@ -96,13 +117,19 @@
         </label> -->
 
         <!-- 광고 계정 ID 선택하기 -->
-        <label for="accountInput" class="col-form-label"><small>광고 계정 선택</small></label>
-        <select id="accountInput" class="form-control form-control-sm">
+        <label for="accountSelect" class="col-form-label"><small>광고 계정 선택</small></label>
+        <select id="accountSelect" class="form-control form-control-sm">
             <option value="choice" selected>-- 계정을 선택하세요 --</option>
             <option value="act_131591329921713">29cm</option>
             <option value="act_1560497494565897">무신사</option>
             <option value="act_2106350366530610">자사몰</option>
+            <option value="custom">직접 입력</option>
         </select>
+        <input type="text" id="customAccountInput" placeholder="광고 계정 ID 입력 (예: act_123456789...)"
+            style="display: none; margin-top: 10px;" class="form-control form-control-sm" />
+        <small id="customAccountHelp" style="display: none; color: #888; margin-top: 5px; font-size: 12px;">
+            Meta 광고 관리자에서 확인한 act_로 시작하는 계정 ID를 입력해주세요.
+        </small>
 
         <label for="dateInput" class="col-form-label"><small>조회 날짜 (YYYY-MM-DD)</small></label>
         <input type="date" id="dateInput" class="form-control form-control-sm" />
@@ -116,6 +143,12 @@
             <p class="h4">조회 결과</p>
             <pre id="resultArea"></pre>
         </div>
+
+        <footer>
+            ⓒ 2025. 만든 사람 <strong>개발찬</strong> | Meta Marketing API 기반<br />
+            Contact: <a href="mailto:sychoi@withbrother.co.kr"
+                style="color: #007bff; text-decoration: none;">sychoi@withbrother.co.kr</a>
+        </footer>
     </div>
 
     <script>
@@ -125,22 +158,30 @@
         const btnFetch = document.getElementById('btnFetch');
         const resultArea = document.getElementById('resultArea');
 
-        // 기존 토큰이 있다면 불러오기
-        if (localStorage.getItem('ACCESS_TOKEN')) {
-            tokenInput.value = localStorage.getItem('ACCESS_TOKEN');
+        const select = document.getElementById('accountSelect');
+        const customInput = document.getElementById('customAccountInput');
+        const customHelp = document.getElementById('customAccountHelp');
+
+
+        select.addEventListener('change', () => {
+            const isCustom = select.value === 'custom';
+            customInput.style.display = isCustom ? 'block' : 'none';
+            customHelp.style.display = isCustom ? 'block' : 'none';
+        });
+
+        function getSelectedAccountId() {
+            return select.value === 'custom' ? customInput.value.trim() : select.value;
         }
 
         btnFetch.onclick = async () => {
             const token = tokenInput.value.trim();
-            const account = accountInput.value.trim();
+            const account = getSelectedAccountId();
             const date = dateInput.value;
 
             if (!token || !account || !date) {
                 alert('모든 항목을 입력하세요.');
                 return;
             }
-
-            localStorage.setItem('ACCESS_TOKEN', token);
 
             const fields = [
                 "campaign_name",
@@ -217,8 +258,6 @@ CPC: ${cpc}
                 resultArea.textContent = '오류 발생: ' + e.message;
             }
 
-            // 토큰 바로 삭제하고 싶으면 아래 코드 주석 해제
-            localStorage.removeItem('ACCESS_TOKEN');
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
