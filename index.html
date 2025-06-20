@@ -206,7 +206,7 @@
                 const response = await fetch(url);
                 if (!response.ok) {
                     const errText = await response.text();
-                    resultArea.textContent = '에러: ' + errText;
+                    resultArea.textContent = '오류 발생: 개발자에게 문의하세요.\n' + errText;
                     return;
                 }
 
@@ -250,7 +250,8 @@ CPC: ${cpc}
                 });
 
             } catch (e) {
-                resultArea.textContent = '오류 발생: ' + e.message;
+                // resultArea.textContent = '오류 발생: ' + e.message;
+                resultArea.textContent = '오류 발생: 개발자에게 문의하세요.' + e.message;
             }
 
         };
