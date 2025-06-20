@@ -118,8 +118,8 @@
 
         <!-- 광고 계정 ID 선택하기 -->
         <label for="accountSelect" class="col-form-label"><small>광고 계정 선택</small></label>
-        <select id="accountSelect" class="form-control form-control-sm">
-            <option value="choice" selected>-- 계정을 선택하세요 --</option>
+        <select id="accountSelect" class="form-select form-select-sm">
+            <option value="" selected disabled>-- 계정을 선택하세요 --</option>
             <option value="act_131591329921713">29cm</option>
             <option value="act_1560497494565897">무신사</option>
             <option value="act_2106350366530610">자사몰</option>
@@ -137,7 +137,6 @@
         <button id="btnFetch" type="button" class="btn btn-dark btn-sm"
             style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
             조회하기</button>
-        <div></div>
 
         <div class="result-box">
             <p class="h4">조회 결과</p>
@@ -263,7 +262,6 @@ CPC: ${cpc}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
         crossorigin="anonymous"></script>
-
 </body>
 
 </html>
