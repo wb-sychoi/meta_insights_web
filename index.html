@@ -30,25 +30,6 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
-            font-size: 18px;
-            text-align: center;
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 4px;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-        }
-
         #tokenInput::placeholder {
             font-size: 0.75rem;
             /* 원하는 크기로 조정 */
@@ -65,17 +46,8 @@
 
         button {
             width: 100%;
-            padding: 10px;
-            margin-top: 12px;
-            background-color: #007bff;
-            border: none;
-            color: white;
-            font-size: 16px;
+            margin-top: 20px;
             cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
         }
 
         .result-box {
@@ -83,7 +55,6 @@
         }
 
         pre {
-            margin-top: 16px;
             background: #f0f0f0;
             padding: 12px;
             height: 300px;
@@ -130,9 +101,7 @@
         <label for="dateInput" class="col-form-label"><small>조회 날짜 (YYYY-MM-DD)</small></label>
         <input type="date" id="dateInput" class="form-control form-control-sm" />
 
-        <button id="btnFetch" type="button" class="btn btn-dark btn-sm"
-            style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
-            조회하기</button>
+        <button id="btnFetch" type="button" class="btn btn-dark">조회하기</button>
 
         <div class="result-box">
             <p class="h4">조회 결과</p>
@@ -212,6 +181,11 @@
 
                 const data = await response.json();
                 resultArea.textContent = ""; // 초기화
+
+                if (!data.data || data.data.length === 0) {
+                    resultArea.textContent = "📭 조회 결과가 없습니다.";
+                    return;
+                }
 
                 data.data.forEach(item => {
                     const getActionValue = (list, type) => {
